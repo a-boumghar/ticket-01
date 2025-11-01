@@ -44,7 +44,7 @@ const DataTable: React.FC<DataTableProps> = ({ data, selectedRows, dirtyRows, on
                 onChange={(e) => onSelectAll(e.target.checked)}
               />
             </th>
-            {['Name', 'City', 'ClientN', 'Courier', 'Tracking', 'Invoice', 'Cartons'].map(header => (
+            {['Full Name', 'Name', 'City', 'ClientN', 'Courier', 'Tracking', 'Invoice', 'Cartons'].map(header => (
               <th key={header} className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{header}</th>
             ))}
           </tr>
@@ -60,6 +60,7 @@ const DataTable: React.FC<DataTableProps> = ({ data, selectedRows, dirtyRows, on
                   onChange={(e) => onSelectionChange(row.id, e.target.checked)}
                 />
               </td>
+              <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{row.fullName}</td>
               <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-800">{row.name}</td>
               <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-800">{row.city}</td>
               <td className="px-4 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">{row.clientN}</td>

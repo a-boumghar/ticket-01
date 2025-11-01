@@ -1,31 +1,69 @@
-
 import type { ShippingData } from '../types';
 
-const MOCK_DATA: ShippingData[] = [
-  { id: 1, name: 'John Doe', city: 'New York', clientN: 'CUST-001', courier: 'BAHA EXPRESS', tracking: 'TRK12345', invoice: 'INV-2024-001', cartons: 1 },
-  { id: 2, name: 'Jane Smith', city: 'London', clientN: 'CUST-002', courier: 'SAT EXPRESS', tracking: 'TRK67890', invoice: 'INV-2024-002', cartons: 3 },
-  { id: 3, name: 'علي الأحمد', city: 'الرياض', clientN: 'CUST-003', courier: 'LUX EXPRESS', tracking: 'TRK11223', invoice: 'INV-2024-003', cartons: 1 },
-  { id: 4, name: 'Fatima Al-Fihri', city: 'Dubai', clientN: 'CUST-004', courier: 'BAHA EXPRESS', tracking: '', invoice: '', cartons: 2 },
-  { id: 5, name: 'محمد عبد الله', city: 'القاهرة', clientN: 'CUST-005', courier: 'SAT EXPRESS', tracking: '', invoice: '', cartons: 1 },
-  { id: 6, name: 'Peter Jones', city: 'Sydney', clientN: 'CUST-006', courier: 'LUX EXPRESS', tracking: 'TRK44556', invoice: 'INV-2024-006', cartons: 5 },
-  { id: 7, name: 'Emily White', city: 'Toronto', clientN: 'CUST-007', courier: 'BAHA EXPRESS', tracking: 'TRK77889', invoice: 'INV-2024-007', cartons: 1 },
-];
+const API_URL = 'https://script.google.com/macros/s/AKfycby1BWL68F00BHr3V0ax9wSnnbuGFy2j5bGr9eOTBIZoiRvL0QI772L8r8qeJuv0Pvsd/exec';
 
-// Simulate network delay
-const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
-
+/**
+ * Fetches shipping data from the Google Sheet API.
+ * The Google Sheet uses PascalCase headers (e.g., "FullName"), but the app expects
+ * camelCase (e.g., "fullName"). This function fetches the data and maps the keys
+ * to the format the application expects.
+ */
 export const getSheetData = async (): Promise<ShippingData[]> => {
-  console.log("Mock Service: Fetching sheet data...");
-  await delay(500);
-  // Return a deep copy to prevent direct mutation of the mock data
-  return JSON.parse(JSON.stringify(MOCK_DATA));
+  console.log("Fetching sheet data from Google Sheets...");
+  const res = await fetch(API_URL);
+  if (!res.ok) throw new Error("Failed to fetch data");
+  const dataFromSheet: any[] = await res.json();
+
+  // Map the raw data keys from PascalCase (Sheet) to camelCase (App)
+  return dataFromSheet.map((row) => ({
+    id: row.id,
+    fullName: row.FullName || '',
+    name: row.Name || '',
+    city: row.City || '',
+    clientN: row.ClientN || '',
+    courier: row.Courier || 'BAHA EXPRESS',
+    tracking: row.Tracking || '',
+    invoice: row.Invoice || '',
+    cartons: row.Cartons || 1,
+  }));
 };
 
+/**
+ * Sends updated row data to the Google Sheet API.
+ * This function maps the app's camelCase data keys back to the PascalCase format
+ * that the Google Sheet API expects before sending the update.
+ */
 export const updateSheetData = async (updates: Partial<ShippingData>[]): Promise<void> => {
-  console.log("Mock Service: Updating sheet data with:", updates);
-  await delay(1000);
-  // In a real app, this would send data to the backend.
-  // Here we just log it.
-  console.log(`${updates.length} rows updated successfully.`);
-  return Promise.resolve();
+  console.log("Sending updates to Google Sheets...");
+
+  const updatesForSheet = updates.map(update => {
+    const mappedUpdate: { [key: string]: any } = {};
+    // This dynamically maps camelCase keys from the app to the PascalCase keys the sheet expects.
+    for (const key in update) {
+        if (Object.prototype.hasOwnProperty.call(update, key)) {
+            const value = (update as any)[key];
+            if (key === 'id') {
+                mappedUpdate.id = value;
+            } else if (key === 'clientN') {
+                mappedUpdate.ClientN = value;
+            } else {
+                const pascalCaseKey = key.charAt(0).toUpperCase() + key.slice(1);
+                mappedUpdate[pascalCaseKey] = value;
+            }
+        }
+    }
+    return mappedUpdate;
+  });
+
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(updatesForSheet),
+  });
+
+  if (!res.ok) throw new Error("Failed to update data");
+  const result = await res.json();
+  if (!result.success) throw new Error(result.error || "An unknown error occurred while saving.");
+  
+  console.log("✅ Updated successfully:", result);
 };
