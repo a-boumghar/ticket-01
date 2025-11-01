@@ -109,6 +109,7 @@ const DataTable: React.FC<DataTableProps> = ({ data, selectedRows, dirtyRows, on
 
 interface LabelData extends ShippingData {
   cartonNumber: number;
+  totalCartons: number;
 }
 
 interface LabelProps {
@@ -135,8 +136,10 @@ const Label: React.FC<LabelProps> = ({ label }) => {
             <div className="flex-[1_1_30%] flex items-center justify-center border-b-2 border-black">
               <p className="text-3xl font-bold" dir="rtl">عدد كوليات</p>
             </div>
-            <div className="flex-[1_1_70%] flex items-center justify-center">
-              <p className="text-8xl font-extrabold tracking-tighter">{label.cartonNumber}</p>
+            <div className="flex-[1_1_70%] flex items-center justify-center p-1">
+              <div className="flex items-baseline justify-center leading-none">
+                <span className="text-8xl font-extrabold tracking-tighter">{label.totalCartons}</span>
+              </div>
             </div>
           </div>
           {/* Right Column (Name & City) - 65% */}
@@ -335,7 +338,7 @@ function App() {
     data.forEach(row => {
       if (selectedRows.has(row.id)) {
         for (let i = 1; i <= row.cartons; i++) {
-          labels.push({ ...row, cartonNumber: i });
+          labels.push({ ...row, cartonNumber: i, totalCartons: row.cartons });
         }
       }
     });
