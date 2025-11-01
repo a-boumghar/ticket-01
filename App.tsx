@@ -79,7 +79,15 @@ const DataTable: React.FC<DataTableProps> = ({ data, selectedRows, dirtyRows, on
                   className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 />
               </td>
-              <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{row.cartons}</td>
+              <td className="px-4 py-4 whitespace-nowrap text-sm">
+                <input
+                  type="number"
+                  value={row.cartons}
+                  onChange={(e) => onUpdate(row.id, 'cartons', parseInt(e.target.value, 10) || 1)}
+                  min="1"
+                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                />
+              </td>
             </tr>
           ))}
         </tbody>
@@ -117,7 +125,7 @@ const Label: React.FC<LabelProps> = ({ label }) => {
               <p className="text-3xl font-bold" dir="rtl">عدد كوليات</p>
             </div>
             <div className="flex-1 flex items-center justify-center">
-              <p className="text-8xl font-extrabold tracking-tighter">{label.cartons}</p>
+              <p className="text-8xl font-extrabold tracking-tighter">{label.cartonNumber}</p>
             </div>
           </div>
           {/* Right Column (Name & City) */}
@@ -267,7 +275,7 @@ function App() {
     data.forEach(row => {
       if (selectedRows.has(row.id)) {
         for (let i = 1; i <= row.cartons; i++) {
-          labels.push({ ...row, cartonNumber: i });
+          labels.push({ ...row, cartonNumber: row.cartons });
         }
       }
     });
