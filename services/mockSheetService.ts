@@ -1,3 +1,4 @@
+
 import type { ShippingData } from '../types';
 
 const API_URL = 'https://script.google.com/macros/s/AKfycby1BWL68F00BHr3V0ax9wSnnbuGFy2j5bGr9eOTBIZoiRvL0QI772L8r8qeJuv0Pvsd/exec';
@@ -27,7 +28,7 @@ export const getSheetData = async (): Promise<ShippingData[]> => {
     courier: row.Courier || 'BAHA EXPRESS',
     tracking: row.Tracking || '',
     invoice: row.Invoice || '',
-    cartons: Number(row.Cartons) || 1,
+    cartons: Number(row.Cartons) || 0,
   }));
 };
 
