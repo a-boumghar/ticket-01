@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import type { ShippingData, Courier } from './types';
 import { getSheetData, updateSheetData } from './services/mockSheetService';
 import { COURIER_OPTIONS } from './types';
@@ -219,6 +219,8 @@ function App() {
   const [dirtyRows, setDirtyRows] = useState<Set<number>>(new Set());
   const [isPrinting, setIsPrinting] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState<boolean>(false);
+  const [statusMessage, setStatusMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+  const statusTimeoutRef = useRef<number | null>(null);
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -226,6 +228,9 @@ function App() {
     try {
       const result = await getSheetData();
       setData(result);
+      // FIX: Reset selections and pending changes on refresh to prevent state mismatches
+      setSelectedRows(new Set());
+      setDirtyRows(new Set());
     } catch (e) {
       setError("Failed to load data.");
       console.error(e);
@@ -238,11 +243,24 @@ function App() {
     loadData();
   }, [loadData]);
 
+  // Cleanup timeout on component unmount
+  useEffect(() => {
+    return () => {
+      if (statusTimeoutRef.current) {
+        clearTimeout(statusTimeoutRef.current);
+      }
+    };
+  }, []);
+
   const handleUpdate = (id: number, field: keyof ShippingData, value: string | number) => {
     setData(currentData =>
       currentData.map(row => (row.id === id ? { ...row, [field]: value } : row))
     );
-    setDirtyRows(currentDirty => new Set(currentDirty.add(id)));
+    setDirtyRows(currentDirty => {
+      const newDirty = new Set(currentDirty);
+      newDirty.add(id);
+      return newDirty;
+    });
   };
 
   const handleSelectionChange = (id: number, isSelected: boolean) => {
@@ -271,16 +289,19 @@ function App() {
       return;
     }
     setIsSaving(true);
+    setStatusMessage(null);
     const updates = data.filter(row => dirtyRows.has(row.id));
     try {
       await updateSheetData(updates);
       setDirtyRows(new Set());
-      alert("Changes saved successfully!");
+      setStatusMessage({ text: "Changes saved successfully!", type: 'success' });
     } catch (e) {
-      alert("Failed to save changes.");
+      setStatusMessage({ text: "Failed to save changes. Check console for details.", type: 'error' });
       console.error(e);
     } finally {
       setIsSaving(false);
+      if (statusTimeoutRef.current) clearTimeout(statusTimeoutRef.current);
+      statusTimeoutRef.current = window.setTimeout(() => setStatusMessage(null), 3000);
     }
   };
   
@@ -314,7 +335,7 @@ function App() {
     data.forEach(row => {
       if (selectedRows.has(row.id)) {
         for (let i = 1; i <= row.cartons; i++) {
-          labels.push({ ...row, cartonNumber: row.cartons });
+          labels.push({ ...row, cartonNumber: i });
         }
       }
     });
@@ -357,6 +378,12 @@ function App() {
               {loading ? 'Refreshing...' : 'Refresh Data'}
             </button>
           </div>
+          {/* UX IMPROVEMENT: Display status messages instead of alerts */}
+          {statusMessage && (
+            <div className={`mt-2 text-sm font-medium p-2 rounded-md transition-opacity duration-300 ${statusMessage.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+              {statusMessage.text}
+            </div>
+          )}
         </div>
 
         {loading ? (

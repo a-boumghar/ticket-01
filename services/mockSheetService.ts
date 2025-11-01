@@ -15,8 +15,11 @@ export const getSheetData = async (): Promise<ShippingData[]> => {
   const dataFromSheet: any[] = await res.json();
 
   // Map the raw data keys from PascalCase (Sheet) to camelCase (App)
-  return dataFromSheet.map((row) => ({
-    id: row.id,
+  return dataFromSheet.map((row, index) => ({
+    // FIX: Ensure a unique ID for each row to prevent React rendering bugs.
+    // It prioritizes an ID from the sheet (checking for 'Id' and 'id') but
+    // falls back to the array index if no ID is provided.
+    id: row.Id ?? row.id ?? index,
     fullName: row.FullName || '',
     name: row.Name || '',
     city: row.City || '',
@@ -24,7 +27,7 @@ export const getSheetData = async (): Promise<ShippingData[]> => {
     courier: row.Courier || 'BAHA EXPRESS',
     tracking: row.Tracking || '',
     invoice: row.Invoice || '',
-    cartons: row.Cartons || 1,
+    cartons: Number(row.Cartons) || 1,
   }));
 };
 
@@ -43,6 +46,8 @@ export const updateSheetData = async (updates: Partial<ShippingData>[]): Promise
         if (Object.prototype.hasOwnProperty.call(update, key)) {
             const value = (update as any)[key];
             if (key === 'id') {
+                // IMPORTANT: The key sent back to the sheet MUST be 'id' in lowercase,
+                // as the Google Apps Script likely expects it this way to identify the row.
                 mappedUpdate.id = value;
             } else if (key === 'clientN') {
                 mappedUpdate.ClientN = value;
