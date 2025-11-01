@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { ShippingData, Courier } from './types';
@@ -7,6 +6,15 @@ import { COURIER_OPTIONS } from './types';
 
 // --- Helper Functions ---
 const isRtl = (text: string) => /[\u0600-\u06FF]/.test(text);
+
+const getTodayDate = () => {
+  const today = new Date();
+  const day = String(today.getDate()).padStart(2, '0');
+  const month = String(today.getMonth() + 1).padStart(2, '0'); // January is 0!
+  const year = today.getFullYear();
+  return `${day}/${month}/${year}`;
+};
+
 
 // --- Sub-components defined outside the main App component ---
 
@@ -108,10 +116,11 @@ interface LabelProps {
 const Label: React.FC<LabelProps> = ({ label }) => {
   const nameDir = isRtl(label.name) ? 'rtl' : 'ltr';
   const cityDir = isRtl(label.city) ? 'rtl' : 'ltr';
+  const todayDate = getTodayDate();
 
   return (
-    <div className="label-print-page">
-      <div className="w-[100mm] h-[100mm] border-4 border-black box-border flex flex-col font-sans text-black bg-white">
+    <div className="label-print-page bg-white">
+      <div className="w-full h-full border-4 border-black box-border flex flex-col font-sans text-black">
         {/* Top Logos */}
         <div className="h-[20mm] flex items-center justify-center border-b-4 border-black p-2">
           <img src="https://i.ibb.co/Cp2Myhk8/121-copy.png" alt="Logos" className="max-h-full max-w-full object-contain" />
@@ -121,19 +130,19 @@ const Label: React.FC<LabelProps> = ({ label }) => {
         <div className="flex-1 grid grid-cols-2">
           {/* Left Column (Cartons) */}
           <div className="flex flex-col text-center">
-            <div className="flex-1 flex items-center justify-center border-b-2 border-black">
+            <div className="flex-[1_1_30%] flex items-center justify-center border-b-2 border-black">
               <p className="text-3xl font-bold" dir="rtl">عدد كوليات</p>
             </div>
-            <div className="flex-1 flex items-center justify-center">
+            <div className="flex-[1_1_70%] flex items-center justify-center">
               <p className="text-8xl font-extrabold tracking-tighter">{label.cartonNumber}</p>
             </div>
           </div>
           {/* Right Column (Name & City) */}
           <div className="flex flex-col text-center border-l-4 border-black">
-            <div className="flex-1 flex items-center justify-center border-b-2 border-black px-1">
+            <div className="flex-[1_1_60%] flex items-center justify-center border-b-2 border-black px-1">
               <p className="text-6xl font-bold break-all" dir={nameDir}>{label.name}</p>
             </div>
-            <div className="flex-1 flex items-center justify-center px-1">
+            <div className="flex-[1_1_40%] flex items-center justify-center px-1">
               <p className="text-6xl font-bold break-all" dir={cityDir}>{label.city}</p>
             </div>
           </div>
@@ -146,7 +155,7 @@ const Label: React.FC<LabelProps> = ({ label }) => {
             <span className="text-lg">{label.tracking}</span>
           </div>
           <div className="flex justify-between items-center py-1 px-2 border-b-2 border-black text-sm">
-            <span>FACTURE N°: {label.invoice}</span>
+            <span>FACTURE N°: {label.invoice} {todayDate}</span>
             <span>CLIENT N°: {label.clientN}</span>
           </div>
           <div className="text-center py-1 px-2 text-sm">
@@ -161,14 +170,37 @@ const Label: React.FC<LabelProps> = ({ label }) => {
 
 interface PrintPreviewProps {
   labels: LabelData[];
+  onClose: () => void;
+  onPrint: () => void;
 }
 
-const PrintPreview: React.FC<PrintPreviewProps> = ({ labels }) => {
+const PrintPreview: React.FC<PrintPreviewProps> = ({ labels, onClose, onPrint }) => {
   return (
-    <div id="print-container">
-      {labels.map((label, index) => (
-        <Label key={`${label.id}-${index}`} label={label} />
-      ))}
+    <div id="print-preview-overlay">
+      <div id="print-preview-header">
+        <div className="container mx-auto flex justify-between items-center">
+            <h2 className="text-xl font-bold">Print Preview ({labels.length} labels)</h2>
+            <div>
+              <button
+                onClick={onPrint}
+                className="px-4 py-2 mr-2 text-sm font-medium text-white bg-indigo-600 rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                Print
+              </button>
+              <button
+                onClick={onClose}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                Exit Preview
+              </button>
+            </div>
+        </div>
+      </div>
+      <div id="print-container">
+        {labels.map((label, index) => (
+          <Label key={`${label.id}-${index}`} label={label} />
+        ))}
+      </div>
     </div>
   );
 };
@@ -249,24 +281,28 @@ function App() {
     }
   };
   
-  const handlePrint = () => {
+  const handleShowPreview = () => {
     if (selectedRows.size === 0) {
       alert("Please select rows to generate labels.");
       return;
     }
     setIsPrinting(true);
   };
+
+  const handleActualPrint = () => {
+      window.print();
+  };
   
   useEffect(() => {
-    if (isPrinting) {
-      const handleAfterPrint = () => {
+    const handleAfterPrint = () => {
         setIsPrinting(false);
+    };
+    window.addEventListener('afterprint', handleAfterPrint);
+    return () => {
         window.removeEventListener('afterprint', handleAfterPrint);
-      };
-      window.addEventListener('afterprint', handleAfterPrint);
-      window.print();
-    }
-  }, [isPrinting]);
+    };
+  }, []);
+
 
   const labelsToPrint = useMemo((): LabelData[] => {
     if (!isPrinting) return [];
@@ -283,7 +319,7 @@ function App() {
   }, [isPrinting, data, selectedRows]);
 
   if (isPrinting) {
-    return <PrintPreview labels={labelsToPrint} />;
+    return <PrintPreview labels={labelsToPrint} onClose={() => setIsPrinting(false)} onPrint={handleActualPrint} />;
   }
 
   return (
@@ -297,7 +333,7 @@ function App() {
         <div className="sticky top-0 bg-gray-100/80 backdrop-blur-sm z-10 py-4 mb-4">
           <div className="flex flex-wrap items-center gap-2">
             <button
-              onClick={handlePrint}
+              onClick={handleShowPreview}
               disabled={selectedRows.size === 0}
               className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md shadow-sm hover:bg-indigo-700 disabled:bg-indigo-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >

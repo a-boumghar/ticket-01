@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -8,6 +7,51 @@
     <title>Shipping Label Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+      /* Styles for the on-screen print preview */
+      @media screen {
+        #print-preview-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background-color: #f3f4f6; /* gray-100 */
+          z-index: 50;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          overflow-y: auto;
+        }
+        #print-preview-header {
+          background-color: white;
+          padding: 1rem;
+          width: 100%;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          position: sticky;
+          top: 0;
+          z-index: 1;
+        }
+        #print-container {
+          padding: 2rem;
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(100mm, 1fr));
+          gap: 1.5rem;
+          justify-items: center;
+          width: 100%;
+          max-width: 1400px;
+        }
+        .label-print-page {
+           width: 100mm;
+           height: 100mm;
+           box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+      }
+
+      /* 
+        Print styles for 100mm x 100mm labels.
+        For best results with your Gainscha GS-2408D printer, ensure you have set
+        the paper size to 100mm x 100mm in your computer's print dialog settings as well.
+      */
       @media print {
         @page {
           size: 100mm 100mm;
@@ -20,6 +64,9 @@
         body > * {
           display: none;
         }
+        #print-preview-header {
+          display: none;
+        }
         #print-container, #print-container * {
           display: block;
           visibility: visible;
@@ -29,6 +76,7 @@
           left: 0;
           top: 0;
           width: 100%;
+          padding: 0;
         }
         .label-print-page {
           width: 100mm;
@@ -36,6 +84,7 @@
           page-break-after: always;
           box-sizing: border-box;
           overflow: hidden;
+          box-shadow: none;
         }
       }
     </style>
