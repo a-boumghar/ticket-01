@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { ShippingData, Courier } from './types';
@@ -120,16 +121,16 @@ const Label: React.FC<LabelProps> = ({ label }) => {
 
   return (
     <div className="label-print-page bg-white">
-      <div className="w-full h-full border-4 border-black box-border flex flex-col font-sans text-black">
+      <div className="w-full h-full box-border flex flex-col font-sans text-black">
         {/* Top Logos */}
         <div className="h-[20mm] flex items-center justify-center border-b-4 border-black p-2">
           <img src="https://i.ibb.co/Cp2Myhk8/121-copy.png" alt="Logos" className="max-h-full max-w-full object-contain" />
         </div>
 
         {/* Middle Section */}
-        <div className="flex-1 grid grid-cols-2">
-          {/* Left Column (Cartons) */}
-          <div className="flex flex-col text-center">
+        <div className="flex-1 flex">
+          {/* Left Column (Cartons) - 35% */}
+          <div className="w-[35%] flex flex-col text-center">
             <div className="flex-[1_1_30%] flex items-center justify-center border-b-2 border-black">
               <p className="text-3xl font-bold" dir="rtl">عدد كوليات</p>
             </div>
@@ -137,8 +138,8 @@ const Label: React.FC<LabelProps> = ({ label }) => {
               <p className="text-8xl font-extrabold tracking-tighter">{label.cartonNumber}</p>
             </div>
           </div>
-          {/* Right Column (Name & City) */}
-          <div className="flex flex-col text-center border-l-4 border-black">
+          {/* Right Column (Name & City) - 65% */}
+          <div className="w-[65%] flex flex-col text-center border-l-4 border-black">
             <div className="flex-[1_1_60%] flex items-center justify-center border-b-2 border-black px-1">
               <p className="text-6xl font-bold break-all" dir={nameDir}>{label.name}</p>
             </div>
@@ -150,13 +151,14 @@ const Label: React.FC<LabelProps> = ({ label }) => {
 
         {/* Bottom Section */}
         <div className="border-t-4 border-black font-bold text-base">
-          <div className="flex justify-between items-center py-1 px-2 border-b-2 border-black">
-            <span>{label.courier} N°:</span>
-            <span className="text-lg">{label.tracking}</span>
+          <div className="flex justify-between items-center border-b-2 border-black">
+            <span className="py-1 px-2">{label.courier} N°:</span>
+            <span className="py-1 px-2 text-lg text-right">{label.tracking}</span>
           </div>
-          <div className="flex justify-between items-center py-1 px-2 border-b-2 border-black text-sm">
-            <span>FACTURE N°: {label.invoice} {todayDate}</span>
-            <span>CLIENT N°: {label.clientN}</span>
+          <div className="flex items-center text-center border-b-2 border-black text-sm">
+            <span className="w-[36%] px-1 py-1 border-r-2 border-black">FACTURE N°: {label.invoice}</span>
+            <span className="w-[28%] px-1 py-1 border-r-2 border-black">{todayDate}</span>
+            <span className="w-[36%] px-1 py-1">CLIENT N°: {label.clientN}</span>
           </div>
           <div className="text-center py-1 px-2 text-sm">
             <span>0528.98.51.93 / 0661.50.31.02</span>
