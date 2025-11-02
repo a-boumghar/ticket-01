@@ -163,9 +163,9 @@ const Label: React.FC<LabelProps> = ({ label }) => {
             <span className="py-1 px-2 text-lg text-right">{label.tracking}</span>
           </div>
           <div className="flex items-center text-center border-b-2 border-black text-sm">
-            <span className="w-[36%] px-1 py-1 border-r-2 border-black">FACTURE N°: {label.invoice}</span>
-            <span className="w-[28%] px-1 py-1 border-r-2 border-black">{todayDate}</span>
-            <span className="w-[36%] px-1 py-1">CLIENT N°: {label.clientN}</span>
+            <span className="w-[38%] px-1 py-1 border-r-2 border-black">FACTURE N°: {label.invoice}</span>
+            <span className="w-[24%] px-1 py-1 border-r-2 border-black">{todayDate}</span>
+            <span className="w-[38%] px-1 py-1">CLIENT N°: {label.clientN}</span>
           </div>
           <div className="text-center py-1 px-2 text-sm">
             <span>0528.98.51.93 / 0661.50.31.02</span>
