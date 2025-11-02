@@ -396,12 +396,10 @@ function App() {
     return { totalCartons };
   }, [data]);
 
-  if (isPrinting) {
-    return <PrintPreview labels={labelsToPrint} onClose={() => setIsPrinting(false)} onPrint={handleActualPrint} />;
-  }
-
   return (
     <div className="bg-gray-100 min-h-screen font-sans">
+      {isPrinting && <PrintPreview labels={labelsToPrint} onClose={() => setIsPrinting(false)} onPrint={handleActualPrint} />}
+      
       <div className="container mx-auto p-4 sm:p-6 lg:p-8">
         <header className="mb-6">
           <h1 className="text-3xl font-bold text-gray-800">Shipping Label Pro</h1>
