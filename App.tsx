@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import type { ShippingData, Courier } from './types';
@@ -148,10 +149,10 @@ const Label: React.FC<LabelProps> = ({ label }) => {
           {/* Right Column (Name & City) - 65% */}
           <div className="w-[65%] flex flex-col text-center border-l-4 border-black">
             <div className="flex-[1_1_60%] flex items-center justify-center border-b-2 border-black px-1">
-              <p className="text-6xl font-bold break-all" dir={nameDir}>{label.name}</p>
+              <p className="text-5xl font-bold break-all" dir={nameDir}>{label.name}</p>
             </div>
             <div className="flex-[1_1_40%] flex items-center justify-center px-1">
-              <p className="text-6xl font-bold break-all" dir={cityDir}>{label.city}</p>
+              <p className="text-5xl font-bold break-all" dir={cityDir}>{label.city}</p>
             </div>
           </div>
         </div>
