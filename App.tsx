@@ -557,7 +557,7 @@ function App() {
       
       <div className="container mx-auto p-4 sm:p-6 lg:p-8">
         <header className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-800">Shipping Label Pro</h1>
+          <h1 className="text-3xl font-bold text-gray-800">Motorino Ticket</h1>
           <p className="text-gray-600 mt-1">Manage shipping data and generate labels with ease.</p>
         </header>
 

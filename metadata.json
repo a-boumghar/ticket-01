@@ -1,5 +1,5 @@
 {
-  "name": " nadi Shipping Label Pro",
+  "name": "Motorino Ticket",
   "description": "An application to manage shipping data from a Google Sheet and generate printable 100mm x 100mm labels.",
   "requestFramePermissions": []
 }
