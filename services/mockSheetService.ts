@@ -21,13 +21,13 @@ export const getSheetData = async (): Promise<ShippingData[]> => {
     // It prioritizes an ID from the sheet (checking for 'Id' and 'id') but
     // falls back to the array index if no ID is provided.
     id: row.Id ?? row.id ?? index,
-    fullName: row.FullName || '',
-    name: row.Name || '',
-    city: row.City || '',
-    clientN: row.ClientN || '',
+    fullName: String(row.FullName || ''),
+    name: String(row.Name || ''),
+    city: String(row.City || ''),
+    clientN: String(row.ClientN || ''),
     courier: row.Courier || 'BAHA EXPRESS',
-    tracking: row.Tracking || '',
-    invoice: row.Invoice || '',
+    tracking: String(row.Tracking || ''),
+    invoice: String(row.Invoice || ''),
     cartons: Number(row.Cartons) || '',
   }));
 };

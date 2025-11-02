@@ -30,7 +30,7 @@ interface DataTableProps {
 }
 
 const DataTable: React.FC<DataTableProps> = ({ data, selectedRows, dirtyRows, onSelectionChange, onSelectAll, onUpdate }) => {
-  const allSelected = data.length > 0 && selectedRows.size === data.length;
+  const allSelected = data.length > 0 && data.every(row => selectedRows.has(row.id));
 
   return (
     <div className="overflow-x-auto bg-white rounded-lg shadow">
@@ -43,6 +43,7 @@ const DataTable: React.FC<DataTableProps> = ({ data, selectedRows, dirtyRows, on
                 className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
                 checked={allSelected}
                 onChange={(e) => onSelectAll(e.target.checked)}
+                aria-label="Select all rows on this page"
               />
             </th>
             {['Nom Complet', 'Prénom', 'Ville', 'N° Client', 'Transporteur', 'Suivi', 'Facture', 'Cartons'].map(header => (
@@ -59,9 +60,10 @@ const DataTable: React.FC<DataTableProps> = ({ data, selectedRows, dirtyRows, on
                   className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
                   checked={selectedRows.has(row.id)}
                   onChange={(e) => onSelectionChange(row.id, e.target.checked)}
+                  aria-labelledby={`row-name-${row.id}`}
                 />
               </td>
-              <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500 text-center">{row.fullName}</td>
+              <td id={`row-name-${row.id}`} className="px-4 py-4 whitespace-nowrap text-sm text-gray-500 text-center">{row.fullName}</td>
               <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-800 text-center">{row.name}</td>
               <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-800 text-center">{row.city}</td>
               <td className="px-4 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 text-center">{row.clientN}</td>
@@ -407,6 +409,8 @@ function App() {
   const [selectedRows, setSelectedRows] = useState<Set<number>>(() => getInitialSetState('selectedRows'));
   const [dirtyRows, setDirtyRows] = useState<Set<number>>(() => getInitialSetState('dirtyRows'));
   const [isPrinting, setIsPrinting] = useState<boolean>(false);
+  const [searchQuery, setSearchQuery] = useState<string>('');
+
 
   // --- Data Loading and Persistence ---
 
@@ -455,6 +459,18 @@ function App() {
       document.body.classList.remove('print-active');
     };
   }, [isPrinting]);
+  
+  const filteredData = useMemo(() => {
+    const lowercasedQuery = searchQuery.toLowerCase().trim();
+    if (!lowercasedQuery) {
+      return data;
+    }
+    return data.filter(row =>
+      row.fullName.toLowerCase().includes(lowercasedQuery) ||
+      row.name.toLowerCase().includes(lowercasedQuery) ||
+      row.clientN.toLowerCase().includes(lowercasedQuery)
+    );
+  }, [data, searchQuery]);
 
   // --- Event Handlers ---
 
@@ -493,11 +509,15 @@ function App() {
   };
 
   const handleSelectAll = (isSelected: boolean) => {
-    if (isSelected) {
-      setSelectedRows(new Set(data.map(row => row.id)));
-    } else {
-      setSelectedRows(new Set());
-    }
+     setSelectedRows(currentSelected => {
+      const newSelected = new Set(currentSelected);
+      if (isSelected) {
+        filteredData.forEach(row => newSelected.add(row.id));
+      } else {
+        filteredData.forEach(row => newSelected.delete(row.id));
+      }
+      return newSelected;
+    });
   };
   
   const handleClearSelectedRowsData = () => {
@@ -580,21 +600,38 @@ function App() {
         <StatsBar selectedOrders={selectedRows.size} totalCartons={totalCartons} />
 
         <div className="sticky top-0 bg-gray-100/80 backdrop-blur-sm z-10 py-4 mb-4">
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              onClick={handleShowPreview}
-              disabled={selectedRows.size === 0}
-              className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md shadow-sm hover:bg-indigo-700 disabled:bg-indigo-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-              Générer les Étiquettes ({selectedRows.size})
-            </button>
-            <button
-              onClick={handleClearSelectedRowsData}
-              disabled={selectedRows.size === 0}
-              className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md shadow-sm hover:bg-red-700 disabled:bg-red-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-            >
-              Vider Suivi/Facture/Cartons
-            </button>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                onClick={handleShowPreview}
+                disabled={selectedRows.size === 0}
+                className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md shadow-sm hover:bg-indigo-700 disabled:bg-indigo-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                Générer les Étiquettes ({selectedRows.size})
+              </button>
+              <button
+                onClick={handleClearSelectedRowsData}
+                disabled={selectedRows.size === 0}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md shadow-sm hover:bg-red-700 disabled:bg-red-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+              >
+                Vider Suivi/Facture/Cartons
+              </button>
+            </div>
+            <div className="relative sm:w-1/3 min-w-[250px]">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <input
+                type="search"
+                id="table-search"
+                placeholder="Rechercher par nom, prénom, N° client..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              />
+            </div>
           </div>
         </div>
 
@@ -604,7 +641,7 @@ function App() {
           <div className="text-center p-10 bg-red-100 text-red-700 rounded-lg shadow">{error}</div>
         ) : (
           <DataTable
-            data={data}
+            data={filteredData}
             selectedRows={selectedRows}
             dirtyRows={dirtyRows}
             onSelectionChange={handleSelectionChange}
