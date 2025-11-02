@@ -158,9 +158,9 @@ const Label: React.FC<LabelProps> = ({ label }) => {
 
         {/* Bottom Section */}
         <div className="border-t-4 border-black font-bold text-base">
-          <div className="flex justify-between items-center border-b-2 border-black">
+          <div className="flex justify-center items-center border-b-2 border-black">
             <span className="py-1 px-2">{label.courier} N°:</span>
-            <span className="py-1 px-2 text-lg text-right">{label.tracking}</span>
+            <span className="py-1 px-2 text-lg">{label.tracking}</span>
           </div>
           <div className="flex items-center text-center border-b-2 border-black text-sm">
             <span className="w-[38%] px-1 py-1 border-r-2 border-black">FACTURE N°: {label.invoice}</span>
