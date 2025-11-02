@@ -2,10 +2,11 @@
 import React from 'react';
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import type { ShippingData, Courier } from './types';
-import { getSheetData, updateSheetData } from './services/mockSheetService';
+import { getSheetData } from './services/mockSheetService';
 import { COURIER_OPTIONS } from './types';
 
 // --- Helper Functions ---
+
 const isRtl = (text: string) => /[\u0600-\u06FF]/.test(text);
 
 const getTodayDate = () => {
@@ -36,7 +37,7 @@ const DataTable: React.FC<DataTableProps> = ({ data, selectedRows, dirtyRows, on
       <table className="min-w-full divide-y divide-gray-200">
         <thead className="bg-gray-50">
           <tr>
-            <th className="px-4 py-3 text-left">
+            <th className="px-4 py-3 text-center">
               <input
                 type="checkbox"
                 className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
@@ -45,14 +46,14 @@ const DataTable: React.FC<DataTableProps> = ({ data, selectedRows, dirtyRows, on
               />
             </th>
             {['Full Name', 'Name', 'City', 'ClientN', 'Courier', 'Tracking', 'Invoice', 'Cartons'].map(header => (
-              <th key={header} className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{header}</th>
+              <th key={header} className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">{header}</th>
             ))}
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
           {data.map((row) => (
             <tr key={row.id} className={`${dirtyRows.has(row.id) ? 'bg-yellow-50' : ''} hover:bg-gray-50`}>
-              <td className="px-4 py-4 whitespace-nowrap">
+              <td className="px-4 py-4 whitespace-nowrap text-center">
                 <input
                   type="checkbox"
                   className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
@@ -60,42 +61,45 @@ const DataTable: React.FC<DataTableProps> = ({ data, selectedRows, dirtyRows, on
                   onChange={(e) => onSelectionChange(row.id, e.target.checked)}
                 />
               </td>
-              <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{row.fullName}</td>
-              <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-800">{row.name}</td>
-              <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-800">{row.city}</td>
-              <td className="px-4 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">{row.clientN}</td>
-              <td className="px-4 py-4 whitespace-nowrap text-sm">
+              <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500 text-center">{row.fullName}</td>
+              <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-800 text-center">{row.name}</td>
+              <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-800 text-center">{row.city}</td>
+              <td className="px-4 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 text-center">{row.clientN}</td>
+              <td className="px-4 py-4 whitespace-nowrap text-sm text-center">
                 <select 
                   value={row.courier}
                   onChange={(e) => onUpdate(row.id, 'courier', e.target.value)}
-                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-center"
                 >
                   {COURIER_OPTIONS.map(option => <option key={option} value={option}>{option}</option>)}
                 </select>
               </td>
-              <td className="px-4 py-4 whitespace-nowrap text-sm">
+              <td className="px-4 py-4 whitespace-nowrap text-sm text-center">
                  <input 
                   type="text" 
                   value={row.tracking} 
                   onChange={(e) => onUpdate(row.id, 'tracking', e.target.value)}
-                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-center"
                  />
               </td>
-              <td className="px-4 py-4 whitespace-nowrap text-sm">
+              <td className="px-4 py-4 whitespace-nowrap text-sm text-center">
                 <input 
                   type="text" 
                   value={row.invoice} 
                   onChange={(e) => onUpdate(row.id, 'invoice', e.target.value)}
-                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-center"
                 />
               </td>
-              <td className="px-4 py-4 whitespace-nowrap text-sm">
+              <td className="px-4 py-4 whitespace-nowrap text-sm text-center">
                 <input
                   type="number"
                   value={row.cartons}
-                  onChange={(e) => onUpdate(row.id, 'cartons', parseInt(e.target.value, 10) || 1)}
+                  onChange={(e) => {
+                    const num = parseInt(e.target.value, 10);
+                    onUpdate(row.id, 'cartons', num > 0 ? num : '');
+                  }}
                   min="1"
-                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-center"
                 />
               </td>
             </tr>
@@ -211,49 +215,109 @@ const PrintPreview: React.FC<PrintPreviewProps> = ({ labels, onClose, onPrint })
   );
 };
 
+interface StatsBarProps {
+  selectedOrders: number;
+  totalCartons: number;
+}
+
+const StatsBar: React.FC<StatsBarProps> = ({ selectedOrders, totalCartons }) => {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+      <div className="bg-white p-6 rounded-lg shadow-md flex items-center justify-between">
+        <div>
+          <p className="text-sm font-medium text-gray-500 uppercase tracking-wider">Selected Orders</p>
+          <p className="text-3xl font-bold text-gray-800">{selectedOrders}</p>
+        </div>
+        <div className="bg-indigo-100 p-3 rounded-full">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+          </svg>
+        </div>
+      </div>
+      <div className="bg-white p-6 rounded-lg shadow-md flex items-center justify-between">
+        <div>
+          <p className="text-sm font-medium text-gray-500 uppercase tracking-wider">Total Cartons</p>
+          <p className="text-3xl font-bold text-gray-800">{totalCartons}</p>
+        </div>
+        <div className="bg-green-100 p-3 rounded-full">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+          </svg>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 
 // --- Main App Component ---
 
+// Helpers to get initial state from localStorage, with a fallback.
+const getInitialState = <T,>(key: string, defaultValue: T): T => {
+  try {
+    const item = window.localStorage.getItem(key);
+    return item ? JSON.parse(item) : defaultValue;
+  } catch (error) {
+    console.error(`Error reading localStorage key “${key}”:`, error);
+    return defaultValue;
+  }
+};
+
+const getInitialSetState = <T,>(key: string): Set<T> => {
+  try {
+    const item = window.localStorage.getItem(key);
+    // The stored value for a Set is an array.
+    return item ? new Set(JSON.parse(item)) : new Set();
+  } catch (error) {
+    console.error(`Error reading localStorage key “${key}”:`, error);
+    return new Set();
+  }
+};
+
+
 function App() {
-  const [data, setData] = useState<ShippingData[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [data, setData] = useState<ShippingData[]>(() => getInitialState('shippingData', []));
+  const [loading, setLoading] = useState<boolean>(data.length === 0);
   const [error, setError] = useState<string | null>(null);
-  const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
-  const [dirtyRows, setDirtyRows] = useState<Set<number>>(new Set());
+  const [selectedRows, setSelectedRows] = useState<Set<number>>(() => getInitialSetState('selectedRows'));
+  const [dirtyRows, setDirtyRows] = useState<Set<number>>(() => getInitialSetState('dirtyRows'));
   const [isPrinting, setIsPrinting] = useState<boolean>(false);
-  const [isSaving, setIsSaving] = useState<boolean>(false);
-  const [statusMessage, setStatusMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
-  const statusTimeoutRef = useRef<number | null>(null);
 
-  const loadData = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const result = await getSheetData();
-      setData(result);
-      // FIX: Reset selections and pending changes on refresh to prevent state mismatches
-      setSelectedRows(new Set());
-      setDirtyRows(new Set());
-    } catch (e) {
-      setError("Failed to load data.");
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  // --- Data Loading and Persistence ---
 
+  // Effect for initial data fetch if localStorage was empty
   useEffect(() => {
-    loadData();
-  }, [loadData]);
-
-  // Cleanup timeout on component unmount
-  useEffect(() => {
-    return () => {
-      if (statusTimeoutRef.current) {
-        clearTimeout(statusTimeoutRef.current);
-      }
+    const fetchInitialData = async () => {
+        // Only fetch if data is empty after initial load from localStorage
+        if (data.length === 0) {
+            setLoading(true);
+            setError(null);
+            try {
+                const sheetData = await getSheetData();
+                setData(sheetData);
+            } catch (e) {
+                setError("Failed to fetch from Google Sheets. Please check your connection.");
+                console.error(e);
+            } finally {
+                setLoading(false);
+            }
+        }
     };
-  }, []);
+    fetchInitialData();
+  }, []); // Note: data.length check inside makes this safe to run once.
+
+  // Effect to persist state changes to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('shippingData', JSON.stringify(data));
+      localStorage.setItem('dirtyRows', JSON.stringify(Array.from(dirtyRows)));
+      localStorage.setItem('selectedRows', JSON.stringify(Array.from(selectedRows)));
+    } catch (error) {
+      console.error("Failed to save data to local storage", error);
+    }
+  }, [data, dirtyRows, selectedRows]);
+
+  // --- Event Handlers ---
 
   const handleUpdate = (id: number, field: keyof ShippingData, value: string | number) => {
     setData(currentData =>
@@ -283,28 +347,6 @@ function App() {
       setSelectedRows(new Set(data.map(row => row.id)));
     } else {
       setSelectedRows(new Set());
-    }
-  };
-
-  const handleSave = async () => {
-    if (dirtyRows.size === 0) {
-      alert("No changes to save.");
-      return;
-    }
-    setIsSaving(true);
-    setStatusMessage(null);
-    const updates = data.filter(row => dirtyRows.has(row.id));
-    try {
-      await updateSheetData(updates);
-      setDirtyRows(new Set());
-      setStatusMessage({ text: "Changes saved successfully!", type: 'success' });
-    } catch (e) {
-      setStatusMessage({ text: "Failed to save changes. Check console for details.", type: 'error' });
-      console.error(e);
-    } finally {
-      setIsSaving(false);
-      if (statusTimeoutRef.current) clearTimeout(statusTimeoutRef.current);
-      statusTimeoutRef.current = window.setTimeout(() => setStatusMessage(null), 3000);
     }
   };
   
@@ -337,13 +379,22 @@ function App() {
     const labels: LabelData[] = [];
     data.forEach(row => {
       if (selectedRows.has(row.id)) {
-        for (let i = 1; i <= row.cartons; i++) {
-          labels.push({ ...row, cartonNumber: i, totalCartons: row.cartons });
+        const numCartons = Number(row.cartons) || 0;
+        for (let i = 1; i <= numCartons; i++) {
+          labels.push({ ...row, cartonNumber: i, totalCartons: numCartons });
         }
       }
     });
     return labels;
   }, [isPrinting, data, selectedRows]);
+
+  const { totalCartons } = useMemo(() => {
+    const totalCartons = data.reduce((sum, row) => {
+      const cartonsCount = Number(row.cartons);
+      return sum + (isNaN(cartonsCount) ? 0 : cartonsCount);
+    }, 0);
+    return { totalCartons };
+  }, [data]);
 
   if (isPrinting) {
     return <PrintPreview labels={labelsToPrint} onClose={() => setIsPrinting(false)} onPrint={handleActualPrint} />;
@@ -357,6 +408,8 @@ function App() {
           <p className="text-gray-600 mt-1">Manage shipping data and generate labels with ease.</p>
         </header>
 
+        <StatsBar selectedOrders={selectedRows.size} totalCartons={totalCartons} />
+
         <div className="sticky top-0 bg-gray-100/80 backdrop-blur-sm z-10 py-4 mb-4">
           <div className="flex flex-wrap items-center gap-2">
             <button
@@ -366,31 +419,11 @@ function App() {
             >
               Generate Labels ({selectedRows.size})
             </button>
-            <button
-              onClick={handleSave}
-              disabled={dirtyRows.size === 0 || isSaving}
-              className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md shadow-sm hover:bg-green-700 disabled:bg-green-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-            >
-              {isSaving ? 'Saving...' : `Save Changes (${dirtyRows.size})`}
-            </button>
-            <button
-              onClick={loadData}
-              disabled={loading}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-              {loading ? 'Refreshing...' : 'Refresh Data'}
-            </button>
           </div>
-          {/* UX IMPROVEMENT: Display status messages instead of alerts */}
-          {statusMessage && (
-            <div className={`mt-2 text-sm font-medium p-2 rounded-md transition-opacity duration-300 ${statusMessage.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-              {statusMessage.text}
-            </div>
-          )}
         </div>
 
         {loading ? (
-          <div className="text-center p-10 bg-white rounded-lg shadow">Loading data...</div>
+          <div className="text-center p-10 bg-white rounded-lg shadow">Loading data from Google Sheets...</div>
         ) : error ? (
           <div className="text-center p-10 bg-red-100 text-red-700 rounded-lg shadow">{error}</div>
         ) : (

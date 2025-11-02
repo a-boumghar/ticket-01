@@ -28,48 +28,6 @@ export const getSheetData = async (): Promise<ShippingData[]> => {
     courier: row.Courier || 'BAHA EXPRESS',
     tracking: row.Tracking || '',
     invoice: row.Invoice || '',
-    cartons: Number(row.Cartons) || 0,
+    cartons: Number(row.Cartons) || '',
   }));
-};
-
-/**
- * Sends updated row data to the Google Sheet API.
- * This function maps the app's camelCase data keys back to the PascalCase format
- * that the Google Sheet API expects before sending the update.
- */
-export const updateSheetData = async (updates: Partial<ShippingData>[]): Promise<void> => {
-  console.log("Sending updates to Google Sheets...");
-
-  const updatesForSheet = updates.map(update => {
-    const mappedUpdate: { [key: string]: any } = {};
-    // This dynamically maps camelCase keys from the app to the PascalCase keys the sheet expects.
-    for (const key in update) {
-        if (Object.prototype.hasOwnProperty.call(update, key)) {
-            const value = (update as any)[key];
-            if (key === 'id') {
-                // IMPORTANT: The key sent back to the sheet MUST be 'id' in lowercase,
-                // as the Google Apps Script likely expects it this way to identify the row.
-                mappedUpdate.id = value;
-            } else if (key === 'clientN') {
-                mappedUpdate.ClientN = value;
-            } else {
-                const pascalCaseKey = key.charAt(0).toUpperCase() + key.slice(1);
-                mappedUpdate[pascalCaseKey] = value;
-            }
-        }
-    }
-    return mappedUpdate;
-  });
-
-  const res = await fetch(API_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(updatesForSheet),
-  });
-
-  if (!res.ok) throw new Error("Failed to update data");
-  const result = await res.json();
-  if (!result.success) throw new Error(result.error || "An unknown error occurred while saving.");
-  
-  console.log("✅ Updated successfully:", result);
 };
