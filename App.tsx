@@ -249,10 +249,124 @@ const StatsBar: React.FC<StatsBarProps> = ({ selectedOrders, totalCartons }) => 
   );
 };
 
+// --- Login Component ---
+
+interface LoginProps {
+  onLoginSuccess: () => void;
+}
+
+const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true);
+    setMessage(null);
+
+    if (!password) {
+      setMessage({ text: 'الرجاء إدخال كلمة المرور.', type: 'error' });
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const API_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwqiivQ6AlC6hckD7pM9Tpncz-doKZVw3-eorY6RYcawSbGGXDZ85rQDI563_78WPHZYQ/exec';
+      
+      const response = await fetch(API_ENDPOINT, {
+        method: 'POST',
+        // Using text/plain helps avoid CORS preflight issues with some Google Apps Script setups.
+        headers: {
+          'Content-Type': 'text/plain;charset=utf-8',
+        },
+        body: JSON.stringify({ password }),
+        // Some Google Apps Script deployments might involve redirects.
+        redirect: 'follow',
+      });
+
+      // It's crucial to check if the response was successful before parsing.
+      if (!response.ok) {
+        throw new Error(`Network response was not ok, status: ${response.status}`);
+      }
+
+      // Google Apps Script can return JSON data with a text/plain content type,
+      // so we read it as text and then parse it manually for robustness.
+      const responseText = await response.text();
+      const result = JSON.parse(responseText);
+
+      if (result.success) {
+        setMessage({ text: 'تم تسجيل الدخول بنجاح ✅', type: 'success' });
+        setTimeout(() => {
+          onLoginSuccess();
+        }, 1500);
+      } else {
+        setMessage({ text: result.message || 'كلمة المرور غير صحيحة.', type: 'error' });
+        setLoading(false);
+      }
+    } catch (error) {
+      console.error('Login failed:', error);
+      let errorMessage = 'حدث خطأ أثناء محاولة تسجيل الدخول. الرجاء المحاولة مرة أخرى.';
+      if (error instanceof SyntaxError) {
+        // This catches errors from JSON.parse if the response isn't valid JSON
+        errorMessage = 'حدث خطأ في استلام البيانات من الخادم.';
+      } else if (error instanceof Error && !error.message.includes('ok')) {
+         // Catches network errors but ignores our custom "not ok" message
+         errorMessage = `فشل الاتصال بالخادم.`;
+      }
+      setMessage({ text: errorMessage, type: 'error' });
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="bg-gray-100 min-h-screen flex items-center justify-center font-sans p-4">
+      <div className="w-full max-w-sm bg-white rounded-lg shadow-md p-8">
+        <h1 className="text-2xl font-bold text-center text-gray-800 mb-6" dir="rtl">
+          تسجيل الدخول
+        </h1>
+        <form onSubmit={handleSubmit} noValidate>
+          <div className="mb-4">
+            <label htmlFor="password" className="block text-right text-gray-700 text-sm font-bold mb-2" dir="rtl">
+              كلمة المرور
+            </label>
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-right"
+              dir="rtl"
+              required
+              autoFocus
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:bg-indigo-300 transition-colors"
+            >
+              {loading ? '...جاري التحقق' : 'تسجيل الدخول'}
+            </button>
+          </div>
+        </form>
+        {message && (
+          <p className={`mt-4 text-center text-sm font-semibold ${
+            message.type === 'success' ? 'text-green-600' : 'text-red-600'
+          }`} dir="rtl">
+            {message.text}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+};
+
 
 // --- Main App Component ---
 
-// Helpers to get initial state from localStorage, with a fallback.
+// Helpers to get initial state from localStorage or sessionStorage, with a fallback.
 const getInitialState = <T,>(key: string, defaultValue: T): T => {
   try {
     const item = window.localStorage.getItem(key);
@@ -274,10 +388,21 @@ const getInitialSetState = <T,>(key: string): Set<T> => {
   }
 };
 
+const getInitialAuthState = (): boolean => {
+    try {
+        // Use sessionStorage to keep user logged in for the current session only.
+        return window.sessionStorage.getItem('isAuthenticated') === 'true';
+    } catch (e) {
+        console.error("Could not read from sessionStorage", e);
+        return false;
+    }
+}
+
 
 function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(getInitialAuthState);
   const [data, setData] = useState<ShippingData[]>(() => getInitialState('shippingData', []));
-  const [loading, setLoading] = useState<boolean>(data.length === 0);
+  const [loading, setLoading] = useState<boolean>(data.length === 0 && isAuthenticated);
   const [error, setError] = useState<string | null>(null);
   const [selectedRows, setSelectedRows] = useState<Set<number>>(() => getInitialSetState('selectedRows'));
   const [dirtyRows, setDirtyRows] = useState<Set<number>>(() => getInitialSetState('dirtyRows'));
@@ -288,8 +413,8 @@ function App() {
   // Effect for initial data fetch if localStorage was empty
   useEffect(() => {
     const fetchInitialData = async () => {
-        // Only fetch if data is empty after initial load from localStorage
-        if (data.length === 0) {
+        // Only fetch if authenticated and data is empty
+        if (isAuthenticated && data.length === 0) {
             setLoading(true);
             setError(null);
             try {
@@ -304,10 +429,11 @@ function App() {
         }
     };
     fetchInitialData();
-  }, []); // Note: data.length check inside makes this safe to run once.
+  }, [isAuthenticated]); // Rerun if the user logs in
 
   // Effect to persist state changes to localStorage
   useEffect(() => {
+    if (!isAuthenticated) return; // Don't persist if not logged in
     try {
       localStorage.setItem('shippingData', JSON.stringify(data));
       localStorage.setItem('dirtyRows', JSON.stringify(Array.from(dirtyRows)));
@@ -315,7 +441,7 @@ function App() {
     } catch (error) {
       console.error("Failed to save data to local storage", error);
     }
-  }, [data, dirtyRows, selectedRows]);
+  }, [data, dirtyRows, selectedRows, isAuthenticated]);
 
   // Effect to toggle body class for printing
   useEffect(() => {
@@ -331,6 +457,17 @@ function App() {
   }, [isPrinting]);
 
   // --- Event Handlers ---
+
+  const handleLoginSuccess = () => {
+    try {
+      window.sessionStorage.setItem('isAuthenticated', 'true');
+      setIsAuthenticated(true);
+    } catch (e) {
+      console.error("Could not write to sessionStorage", e);
+      // If storage fails, at least let them use the app for this session
+      setIsAuthenticated(true);
+    }
+  };
 
   const handleUpdate = (id: number, field: keyof ShippingData, value: string | number) => {
     setData(currentData =>
@@ -408,6 +545,11 @@ function App() {
     }, 0);
     return { totalCartons };
   }, [data]);
+
+
+  if (!isAuthenticated) {
+    return <Login onLoginSuccess={handleLoginSuccess} />;
+  }
 
   return (
     <div className="bg-gray-100 min-h-screen font-sans">
