@@ -381,6 +381,7 @@ const getInitialSetState = <T,>(key: string): Set<T> => {
     const item = window.localStorage.getItem(key);
     // The stored value for a Set is an array.
     return item ? new Set(JSON.parse(item)) : new Set();
+// FIX: Add curly braces to the catch block for correct syntax.
   } catch (error) {
     console.error(`Error reading localStorage key “${key}”:`, error);
     return new Set();
@@ -499,6 +500,23 @@ function App() {
     }
   };
   
+  const handleClearSelectedRowsData = () => {
+    setData(currentData =>
+      currentData.map(row => {
+        if (selectedRows.has(row.id)) {
+          return { ...row, tracking: '', invoice: '', cartons: '' };
+        }
+        return row;
+      })
+    );
+    setDirtyRows(currentDirty => {
+      const newDirty = new Set(currentDirty);
+      selectedRows.forEach(id => newDirty.add(id));
+      return newDirty;
+    });
+    console.log("تم مسح قيم suivi, facture, cartons بنجاح");
+  };
+
   const handleShowPreview = () => {
     if (selectedRows.size === 0) {
       alert("Veuillez sélectionner des lignes pour générer des étiquettes.");
@@ -569,6 +587,13 @@ function App() {
               className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md shadow-sm hover:bg-indigo-700 disabled:bg-indigo-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
               Générer les Étiquettes ({selectedRows.size})
+            </button>
+            <button
+              onClick={handleClearSelectedRowsData}
+              disabled={selectedRows.size === 0}
+              className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md shadow-sm hover:bg-red-700 disabled:bg-red-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+            >
+              Vider Suivi/Facture/Cartons
             </button>
           </div>
         </div>
