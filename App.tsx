@@ -45,7 +45,7 @@ const DataTable: React.FC<DataTableProps> = ({ data, selectedRows, dirtyRows, on
                 onChange={(e) => onSelectAll(e.target.checked)}
               />
             </th>
-            {['Full Name', 'Name', 'City', 'ClientN', 'Courier', 'Tracking', 'Invoice', 'Cartons'].map(header => (
+            {['Nom Complet', 'Prénom', 'Ville', 'N° Client', 'Transporteur', 'Suivi', 'Facture', 'Cartons'].map(header => (
               <th key={header} className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">{header}</th>
             ))}
           </tr>
@@ -138,7 +138,7 @@ const Label: React.FC<LabelProps> = ({ label }) => {
           {/* Left Column (Cartons) - 35% */}
           <div className="w-[35%] flex flex-col text-center">
             <div className="flex-[1_1_30%] flex items-center justify-center border-b-2 border-black">
-              <p className="text-xl font-bold" dir="rtl">عدد كوليات</p>
+              <p className="text-xl font-bold">Nombre de Colis</p>
             </div>
             <div className="flex-[1_1_70%] flex items-center justify-center p-1">
               <div className="flex items-baseline justify-center leading-none">
@@ -189,19 +189,19 @@ const PrintPreview: React.FC<PrintPreviewProps> = ({ labels, onClose, onPrint })
     <div id="print-preview-overlay">
       <div id="print-preview-header">
         <div className="container mx-auto flex justify-between items-center">
-            <h2 className="text-xl font-bold">Print Preview ({labels.length} labels)</h2>
+            <h2 className="text-xl font-bold">Aperçu avant impression ({labels.length} étiquettes)</h2>
             <div>
               <button
                 onClick={onPrint}
                 className="px-4 py-2 mr-2 text-sm font-medium text-white bg-indigo-600 rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               >
-                Print
+                Imprimer
               </button>
               <button
                 onClick={onClose}
                 className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               >
-                Exit Preview
+                Quitter l'aperçu
               </button>
             </div>
         </div>
@@ -225,7 +225,7 @@ const StatsBar: React.FC<StatsBarProps> = ({ selectedOrders, totalCartons }) => 
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
       <div className="bg-white p-6 rounded-lg shadow-md flex items-center justify-between">
         <div>
-          <p className="text-sm font-medium text-gray-500 uppercase tracking-wider">Selected Orders</p>
+          <p className="text-sm font-medium text-gray-500 uppercase tracking-wider">Commandes Sélectionnées</p>
           <p className="text-3xl font-bold text-gray-800">{selectedOrders}</p>
         </div>
         <div className="bg-indigo-100 p-3 rounded-full">
@@ -236,7 +236,7 @@ const StatsBar: React.FC<StatsBarProps> = ({ selectedOrders, totalCartons }) => 
       </div>
       <div className="bg-white p-6 rounded-lg shadow-md flex items-center justify-between">
         <div>
-          <p className="text-sm font-medium text-gray-500 uppercase tracking-wider">Total Cartons</p>
+          <p className="text-sm font-medium text-gray-500 uppercase tracking-wider">Cartons Totaux</p>
           <p className="text-3xl font-bold text-gray-800">{totalCartons}</p>
         </div>
         <div className="bg-green-100 p-3 rounded-full">
@@ -266,7 +266,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
     setMessage(null);
 
     if (!password) {
-      setMessage({ text: 'الرجاء إدخال كلمة المرور.', type: 'error' });
+      setMessage({ text: 'Veuillez saisir le mot de passe.', type: 'error' });
       setLoading(false);
       return;
     }
@@ -296,23 +296,23 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
       const result = JSON.parse(responseText);
 
       if (result.success) {
-        setMessage({ text: 'تم تسجيل الدخول بنجاح ✅', type: 'success' });
+        setMessage({ text: 'Connexion réussie ✅', type: 'success' });
         setTimeout(() => {
           onLoginSuccess();
         }, 1500);
       } else {
-        setMessage({ text: result.message || 'كلمة المرور غير صحيحة.', type: 'error' });
+        setMessage({ text: result.message || 'Mot de passe incorrect.', type: 'error' });
         setLoading(false);
       }
     } catch (error) {
       console.error('Login failed:', error);
-      let errorMessage = 'حدث خطأ أثناء محاولة تسجيل الدخول. الرجاء المحاولة مرة أخرى.';
+      let errorMessage = 'Une erreur est survenue lors de la tentative de connexion. Veuillez réessayer.';
       if (error instanceof SyntaxError) {
         // This catches errors from JSON.parse if the response isn't valid JSON
-        errorMessage = 'حدث خطأ في استلام البيانات من الخادم.';
+        errorMessage = "Erreur lors de la réception des données du serveur.";
       } else if (error instanceof Error && !error.message.includes('ok')) {
          // Catches network errors but ignores our custom "not ok" message
-         errorMessage = `فشل الاتصال بالخادم.`;
+         errorMessage = `Échec de la connexion au serveur.`;
       }
       setMessage({ text: errorMessage, type: 'error' });
       setLoading(false);
@@ -322,21 +322,20 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
   return (
     <div className="bg-gray-100 min-h-screen flex items-center justify-center font-sans p-4">
       <div className="w-full max-w-sm bg-white rounded-lg shadow-md p-8">
-        <h1 className="text-2xl font-bold text-center text-gray-800 mb-6" dir="rtl">
-          تسجيل الدخول
+        <h1 className="text-2xl font-bold text-center text-gray-800 mb-6">
+          Connexion
         </h1>
         <form onSubmit={handleSubmit} noValidate>
           <div className="mb-4">
-            <label htmlFor="password" className="block text-right text-gray-700 text-sm font-bold mb-2" dir="rtl">
-              كلمة المرور
+            <label htmlFor="password" className="block text-gray-700 text-sm font-bold mb-2">
+              Mot de passe
             </label>
             <input
               id="password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-right"
-              dir="rtl"
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               required
               autoFocus
             />
@@ -347,14 +346,14 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
               disabled={loading}
               className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:bg-indigo-300 transition-colors"
             >
-              {loading ? '...جاري التحقق' : 'تسجيل الدخول'}
+              {loading ? 'Vérification...' : 'Se connecter'}
             </button>
           </div>
         </form>
         {message && (
           <p className={`mt-4 text-center text-sm font-semibold ${
             message.type === 'success' ? 'text-green-600' : 'text-red-600'
-          }`} dir="rtl">
+          }`}>
             {message.text}
           </p>
         )}
@@ -421,7 +420,7 @@ function App() {
                 const sheetData = await getSheetData();
                 setData(sheetData);
             } catch (e) {
-                setError("Failed to fetch from Google Sheets. Please check your connection.");
+                setError("Échec de la récupération depuis Google Sheets. Veuillez vérifier votre connexion.");
                 console.error(e);
             } finally {
                 setLoading(false);
@@ -502,7 +501,7 @@ function App() {
   
   const handleShowPreview = () => {
     if (selectedRows.size === 0) {
-      alert("Please select rows to generate labels.");
+      alert("Veuillez sélectionner des lignes pour générer des étiquettes.");
       return;
     }
     setIsPrinting(true);
@@ -558,7 +557,7 @@ function App() {
       <div className="container mx-auto p-4 sm:p-6 lg:p-8">
         <header className="mb-6">
           <h1 className="text-3xl font-bold text-gray-800">Motorino Ticket</h1>
-          <p className="text-gray-600 mt-1">Manage shipping data and generate labels with ease.</p>
+          <p className="text-gray-600 mt-1">Gérez les données d'expédition et générez des étiquettes en toute simplicité.</p>
         </header>
 
         <StatsBar selectedOrders={selectedRows.size} totalCartons={totalCartons} />
@@ -570,13 +569,13 @@ function App() {
               disabled={selectedRows.size === 0}
               className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md shadow-sm hover:bg-indigo-700 disabled:bg-indigo-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
-              Generate Labels ({selectedRows.size})
+              Générer les Étiquettes ({selectedRows.size})
             </button>
           </div>
         </div>
 
         {loading ? (
-          <div className="text-center p-10 bg-white rounded-lg shadow">Loading data from Google Sheets...</div>
+          <div className="text-center p-10 bg-white rounded-lg shadow">Chargement des données depuis Google Sheets...</div>
         ) : error ? (
           <div className="text-center p-10 bg-red-100 text-red-700 rounded-lg shadow">{error}</div>
         ) : (

@@ -1,5 +1,5 @@
 {
   "name": "Motorino Ticket",
-  "description": "An application to manage shipping data from a Google Sheet and generate printable 100mm x 100mm labels.",
+  "description": "Une application pour gérer les données d'expédition à partir d'une feuille Google et générer des étiquettes imprimables de 100 mm x 100 mm.",
   "requestFramePermissions": []
 }
