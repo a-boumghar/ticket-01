@@ -138,7 +138,7 @@ const Label: React.FC<LabelProps> = ({ label }) => {
           {/* Left Column (Cartons) - 35% */}
           <div className="w-[35%] flex flex-col text-center">
             <div className="flex-[1_1_30%] flex items-center justify-center border-b-2 border-black">
-              <p className="text-xl font-bold">Nombre de Colis</p>
+              <p className="text-xl font-bold">عدد كوليات</p>
             </div>
             <div className="flex-[1_1_70%] flex items-center justify-center p-1">
               <div className="flex items-baseline justify-center leading-none">
