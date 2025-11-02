@@ -129,8 +129,8 @@ const Label: React.FC<LabelProps> = ({ label }) => {
     <div className="label-print-page bg-white">
       <div className="w-full h-full box-border flex flex-col font-sans text-black">
         {/* Top Logos */}
-        <div className="h-[20mm] flex items-center justify-center border-b-4 border-black p-2">
-          <img src="https://i.ibb.co/JWgS7HsJ/logo-tcket.jpg" alt="Logos" className="max-h-full max-w-full object-contain" />
+        <div className="h-[20mm] border-b-4 border-black">
+          <img src="https://i.ibb.co/JWgS7HsJ/logo-tcket.jpg" alt="Logos" className="w-full h-full object-fill" />
         </div>
 
         {/* Middle Section */}
