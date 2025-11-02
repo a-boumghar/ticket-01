@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import type { ShippingData, Courier } from './types';
@@ -316,6 +315,19 @@ function App() {
       console.error("Failed to save data to local storage", error);
     }
   }, [data, dirtyRows, selectedRows]);
+
+  // Effect to toggle body class for printing
+  useEffect(() => {
+    if (isPrinting) {
+      document.body.classList.add('print-active');
+    } else {
+      document.body.classList.remove('print-active');
+    }
+    // Cleanup on unmount
+    return () => {
+      document.body.classList.remove('print-active');
+    };
+  }, [isPrinting]);
 
   // --- Event Handlers ---
 

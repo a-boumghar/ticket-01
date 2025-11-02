@@ -49,8 +49,7 @@
 
       /* 
         Print styles for 100mm x 100mm labels.
-        For best results with your Gainscha GS-2408D printer, ensure you have set
-        the paper size to 100mm x 100mm in your computer's print dialog settings as well.
+        These styles rely on a `print-active` class being added to the <body> tag.
       */
       @media print {
         @page {
@@ -61,23 +60,41 @@
           -webkit-print-color-adjust: exact;
           print-color-adjust: exact;
         }
-        body > * {
+        
+        /* By default, if the print-active class is missing, print a blank page.
+           This prevents printing the entire UI if the JS logic fails. */
+        body:not(.print-active) {
           display: none;
         }
-        #print-preview-header {
+
+        /* When printing is active, hide the main application container and the preview's header */
+        .print-active .container,
+        .print-active #print-preview-header {
           display: none;
         }
-        #print-container, #print-container * {
+
+        /* Reset the screen-specific styles of the overlay to make it a simple container */
+        .print-active #print-preview-overlay {
+          position: static;
+          top: auto;
+          left: auto;
+          width: auto;
+          height: auto;
+          background-color: transparent;
+          z-index: auto;
+          overflow-y: visible;
           display: block;
-          visibility: visible;
         }
-        #print-container {
-          position: absolute;
-          left: 0;
-          top: 0;
-          width: 100%;
+
+        /* Ensure the print container is ready for printing */
+        .print-active #print-container {
           padding: 0;
+          display: block;
+          grid-template-columns: unset; /* override screen grid */
+          gap: 0;
         }
+        
+        /* Style the individual labels for printing */
         .label-print-page {
           width: 100mm;
           height: 100mm;
