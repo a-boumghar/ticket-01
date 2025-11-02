@@ -485,6 +485,31 @@ function App() {
     }
   };
 
+  const handleRefresh = async () => {
+    if (dirtyRows.size > 0) {
+      const confirmed = window.confirm(
+        "Vous avez des modifications non enregistrées qui seront perdues. Voulez-vous vraiment actualiser les données ?"
+      );
+      if (!confirmed) {
+        return;
+      }
+    }
+
+    setLoading(true);
+    setError(null);
+    try {
+      const sheetData = await getSheetData();
+      setData(sheetData);
+      setDirtyRows(new Set());
+      setSelectedRows(new Set());
+    } catch (e) {
+      setError("Échec de la récupération depuis Google Sheets. Veuillez vérifier votre connexion.");
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleUpdate = (id: number, field: keyof ShippingData, value: string | number) => {
     setData(currentData =>
       currentData.map(row => (row.id === id ? { ...row, [field]: value } : row))
@@ -615,6 +640,15 @@ function App() {
                 className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md shadow-sm hover:bg-red-700 disabled:bg-red-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
               >
                 Vider Suivi/Facture/Cartons
+              </button>
+              <button
+                onClick={handleRefresh}
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Actualiser
               </button>
             </div>
             <div className="relative sm:w-1/3 min-w-[250px]">
