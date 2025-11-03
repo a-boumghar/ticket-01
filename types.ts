@@ -20,6 +20,7 @@ export interface ShippingData {
   fullName: string;
   city: string;
   clientN: string;
+  phone: string;
   courier: Courier;
   tracking: string;
   invoice: string;

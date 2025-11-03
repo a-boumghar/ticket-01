@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import type { ShippingData, Courier } from './types';
@@ -46,7 +45,7 @@ const DataTable: React.FC<DataTableProps> = ({ data, selectedRows, dirtyRows, on
                 aria-label="Select all rows on this page"
               />
             </th>
-            {['Nom Complet', 'Prénom', 'Ville', 'N° Client', 'Transporteur', 'Suivi', 'Facture', 'Cartons'].map(header => (
+            {['Nom Complet', 'Prénom', 'Ville', 'N° Client', 'رقم الهاتف', 'Transporteur', 'Suivi', 'Facture', 'Cartons'].map(header => (
               <th key={header} className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">{header}</th>
             ))}
           </tr>
@@ -67,6 +66,14 @@ const DataTable: React.FC<DataTableProps> = ({ data, selectedRows, dirtyRows, on
               <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-800 text-center">{row.name}</td>
               <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-800 text-center">{row.city}</td>
               <td className="px-4 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 text-center">{row.clientN}</td>
+              <td className="px-4 py-4 whitespace-nowrap text-sm text-center">
+                 <input 
+                  type="text" 
+                  value={row.phone} 
+                  onChange={(e) => onUpdate(row.id, 'phone', e.target.value)}
+                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-center"
+                 />
+              </td>
               <td className="px-4 py-4 whitespace-nowrap text-sm text-center">
                 <select 
                   value={row.courier}
@@ -161,14 +168,16 @@ const Label: React.FC<LabelProps> = ({ label }) => {
 
         {/* Bottom Section */}
         <div className="border-t-4 border-black font-bold text-base">
-          <div className="flex justify-center items-center border-b-2 border-black">
-            <span className="py-1 px-2">{label.courier} N°:</span>
-            <span className="py-1 px-2 text-lg">{label.tracking}</span>
+          <div className="flex items-center justify-between border-b-2 border-black px-2 py-1">
+            <span>{label.courier} N°: {label.tracking}</span>
+            {label.phone && <span>TEL: {label.phone}</span>}
           </div>
-          <div className="flex items-center text-center border-b-2 border-black text-sm">
-            <span className="w-[38%] px-1 py-1 border-r-2 border-black">FACTURE N°: {label.invoice}</span>
-            <span className="w-[24%] px-1 py-1 border-r-2 border-black">{todayDate}</span>
-            <span className="w-[38%] px-1 py-1">CLIENT N°: {label.clientN}</span>
+          <div className="flex items-stretch border-b-2 border-black text-sm">
+            <span className="w-[38%] px-2 py-1 border-r-2 border-black flex items-center">FACTURE N°: {label.invoice}</span>
+            <span className="w-[24%] px-1 py-1 border-r-2 border-black flex items-center justify-center">{todayDate}</span>
+            <div className="w-[38%] px-2 py-1 flex items-center justify-end">
+                <span className="break-words">CLIENT N°: {label.clientN}</span>
+            </div>
           </div>
           <div className="text-center py-1 px-2 text-sm">
             <span>0528.98.51.93 / 0661.50.31.02</span>
@@ -403,7 +412,11 @@ const getInitialAuthState = (): boolean => {
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(getInitialAuthState);
-  const [data, setData] = useState<ShippingData[]>(() => getInitialState('shippingData', []));
+  const [data, setData] = useState<ShippingData[]>(() => {
+    const savedData = getInitialState<ShippingData[]>('shippingData', []);
+    // Ensure all loaded data has a `phone` field to prevent errors with legacy data.
+    return savedData.map(row => ({ ...row, phone: row.phone || '' }));
+  });
   const [loading, setLoading] = useState<boolean>(data.length === 0 && isAuthenticated);
   const [error, setError] = useState<string | null>(null);
   const [selectedRows, setSelectedRows] = useState<Set<number>>(() => getInitialSetState('selectedRows'));
@@ -468,7 +481,8 @@ function App() {
     return data.filter(row =>
       row.fullName.toLowerCase().includes(lowercasedQuery) ||
       row.name.toLowerCase().includes(lowercasedQuery) ||
-      row.clientN.toLowerCase().includes(lowercasedQuery)
+      row.clientN.toLowerCase().includes(lowercasedQuery) ||
+      row.phone.toLowerCase().includes(lowercasedQuery)
     );
   }, [data, searchQuery]);
 
