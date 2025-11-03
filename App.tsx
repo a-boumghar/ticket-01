@@ -173,9 +173,9 @@ const Label: React.FC<LabelProps> = ({ label }) => {
             {label.phone && <span>TEL: {label.phone}</span>}
           </div>
           <div className="flex items-stretch border-b-2 border-black text-sm">
-            <span className="w-[40%] px-2 py-1 border-r-2 border-black flex items-center justify-center">FACTURE N°: {label.invoice}</span>
-            <span className="w-[20%] px-1 py-1 border-r-2 border-black flex items-center justify-center">{todayDate}</span>
-            <div className="w-[40%] px-2 py-1 flex items-center justify-center">
+            <span className="w-[38%] px-2 py-1 border-r-2 border-black flex items-center justify-center">FACTURE N°: {label.invoice}</span>
+            <span className="w-[24%] px-1 py-1 border-r-2 border-black flex items-center justify-center">{todayDate}</span>
+            <div className="w-[38%] px-2 py-1 flex items-center justify-center">
                 <span className="break-words">CLIENT N°: {label.clientN}</span>
             </div>
           </div>
